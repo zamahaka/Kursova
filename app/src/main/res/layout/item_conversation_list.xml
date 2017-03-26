@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:padding="4dp">
+
+    <com.nulp.zamahaka.kursova.view.CircleImageView
+        android:id="@+id/imageAvatar"
+        android:layout_width="@dimen/conversation_avatar_size"
+        android:layout_height="@dimen/conversation_avatar_size"
+        android:layout_marginRight="@dimen/conversation_avatar_margin"
+        android:contentDescription="@string/conversation_avatar"
+        tools:src="@drawable/ic_person"/>
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/AppTheme.ConversationName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/imageAvatar"
+        android:layout_toStartOf="@+id/textCreated"
+        tools:text="Олександра Вишня"/>
+
+    <TextView
+        android:id="@+id/textCreated"
+        style="@style/AppTheme.ConversationCreated"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        tools:text="18:55"/>
+
+    <com.nulp.zamahaka.kursova.view.CircleImageView
+        android:id="@+id/imageSenderAvatar"
+        android:layout_width="@dimen/conversation_sender_avatar_size"
+        android:layout_height="@dimen/conversation_sender_avatar_size"
+        android:layout_below="@+id/title"
+        android:layout_toEndOf="@+id/imageAvatar"
+        android:contentDescription="@string/conversation_sender_avatar"
+        android:padding="@dimen/conversation_sender_avatar"
+        android:visibility="visible"
+        tools:src="@drawable/ic_person"/>
+
+    <TextView
+        android:id="@+id/textMessage"
+        style="@style/AppTheme.ConversationMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title"
+        android:layout_toEndOf="@+id/imageSenderAvatar"
+        android:layout_toStartOf="@+id/textUnread"
+        tools:text="Подобається"/>
+
+    <TextView
+        android:id="@+id/textUnread"
+        style="@style/AppTheme.ConversationUnread"
+        android:layout_width="@dimen/unread_size"
+        android:layout_height="@dimen/unread_size"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/textCreated"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:visibility="visible"
+        tools:text="1"/>
+
+</RelativeLayout>

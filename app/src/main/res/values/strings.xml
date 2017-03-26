@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Kursova</string>
+    <string name="conversation_avatar">Conversation avatar</string>
+    <string name="conversation_sender_avatar">Conversation sender avatar</string>
+    <string name="create_conversation">Create conversation</string>
 </resources>

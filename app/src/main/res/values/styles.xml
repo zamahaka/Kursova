@@ -8,4 +8,25 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppTheme.ConversationName" parent="TextAppearance.AppCompat.Large">
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="AppTheme.ConversationCreated" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="AppTheme.ConversationMessage" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="AppTheme.ConversationUnread" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/unreadTextColor</item>
+        <item name="android:background">@drawable/bg_unread</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
 </resources>
