@@ -8,7 +8,7 @@ import com.nulp.zamahaka.kursova.mvp.model.User
 /**
  * Created by Ura on 26.03.2017.
  */
-class ConversationPresenter(private val mView: ConversationListContract.View)
+class ConversationsPresenter(private val mView: ConversationListContract.View)
     : ConversationListContract.Presenter {
 
     private val mConversations: MutableList<Conversation> by lazy {
