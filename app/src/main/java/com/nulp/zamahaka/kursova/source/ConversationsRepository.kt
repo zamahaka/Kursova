@@ -22,7 +22,7 @@ private constructor(private val mRemoteConversationsSource: ConversationsDataSou
 
         if (mCacheIsDirty) {
             // If the cache is dirty we need to fetch new data from the network.
-            getTasksFromRemoteDataSource(callback)
+            getConversationsFromRemoteDataSource(callback)
         } else {
             // Query the local storage if available. If not, query the network.
             mLocalConversationsSource.getConversations(object : ConversationsDataSource.LoadCallback {
@@ -32,7 +32,7 @@ private constructor(private val mRemoteConversationsSource: ConversationsDataSou
                 }
 
                 override fun onDataNotAvailable() {
-                    getTasksFromRemoteDataSource(callback)
+                    getConversationsFromRemoteDataSource(callback)
                 }
             })
         }
@@ -80,7 +80,7 @@ private constructor(private val mRemoteConversationsSource: ConversationsDataSou
         mCache.clear()
     }
 
-    private fun getTasksFromRemoteDataSource(callback: ConversationsDataSource.LoadCallback) {
+    private fun getConversationsFromRemoteDataSource(callback: ConversationsDataSource.LoadCallback) {
         mRemoteConversationsSource.getConversations(object : ConversationsDataSource.LoadCallback {
             override fun onConversationsLoaded(conversations: List<Conversation>) {
                 refreshCache(conversations)

@@ -1,13 +1,11 @@
 package com.nulp.zamahaka.kursova.mvp.view.fragment
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import com.nulp.zamahaka.kursova.R
+import com.nulp.zamahaka.kursova.base.TagFragment
 import com.nulp.zamahaka.kursova.controller.ErrorController
 import com.nulp.zamahaka.kursova.controller.NoInternetController
 import com.nulp.zamahaka.kursova.listener.ConversationListener
@@ -20,10 +18,14 @@ import kotlin.properties.Delegates
 /**
  * Created by Ura on 26.03.2017.
  */
-class ConversationListFragment : Fragment(), ConversationListContract.View, ConversationListener {
-
+class ConversationsFragment : TagFragment(), ConversationListContract.View, ConversationListener {
+    override val TAG = "ConversationsFragment"
     override val isActive: Boolean
-        get() = isAdded
+        get() {
+            Log.d("myLog", "isActive($this): $isAdded")
+            return isAdded
+        }
+
 
     private val mAdapter by lazy { ConversationListAdapter(this) }
     private val mItems get() = mAdapter.mItems
@@ -33,6 +35,11 @@ class ConversationListFragment : Fragment(), ConversationListContract.View, Conv
     private val mNoInternetController by lazy { NoInternetController(context) }
     private val mErrorController by lazy { ErrorController(context, R.string.error_message_conversations_loading) }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater?.inflate(R.layout.fragment_conversation_list, container, false)
 
@@ -41,8 +48,16 @@ class ConversationListFragment : Fragment(), ConversationListContract.View, Conv
         mPresenter.start()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.conversations_menu, menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.conversation_menu_create -> startConversationCreation()
+        R.id.conversation_menu_create -> {
+            mPresenter.createConversation()
+            true
+        }
         else -> false
     }
 
@@ -74,6 +89,10 @@ class ConversationListFragment : Fragment(), ConversationListContract.View, Conv
         mPresenter.deleteConversation(id)
     }
 
+    override fun showCreateConversation() {
+        // TODO: 08.04.2017 start conversation creating
+    }
+
     override fun setLoadingIndicator(active: Boolean) {
         swipeRefreshLayout.isRefreshing = active
     }
@@ -94,21 +113,16 @@ class ConversationListFragment : Fragment(), ConversationListContract.View, Conv
         mErrorController.show()
     }
 
-    private fun startConversationCreation(): Boolean {
-        // TODO: 26.03.2017 add creation flow
-        return true
-    }
-
     private fun initViews() {
         recyclerConversations.layoutManager = LinearLayoutManager(context)
         recyclerConversations.adapter = mAdapter
 
-        swipeRefreshLayout.setOnRefreshListener { mPresenter?.loadConversations(true) }
+        swipeRefreshLayout.setOnRefreshListener { mPresenter.loadConversations(true) }
     }
 
     companion object {
-        @JvmStatic fun newInstance(): ConversationListFragment {
-            return ConversationListFragment()
+        @JvmStatic fun newInstance(): ConversationsFragment {
+            return ConversationsFragment()
         }
     }
 }

@@ -7,4 +7,6 @@
     <string name="ok">Ok</string>
     <string name="message_no_conversations">No conversations are available</string>
     <string name="error_message_conversations_loading">Error loading conversations</string>
+    <string name="conversations">Conversations</string>
+    <string name="profile">Profile</string>
 </resources>

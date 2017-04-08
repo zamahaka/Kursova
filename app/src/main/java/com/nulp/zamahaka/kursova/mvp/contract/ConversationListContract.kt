@@ -18,13 +18,14 @@ interface ConversationListContract {
         fun removeConversation(conversationId: Int)
         fun setEmptyState(visible: Boolean)
         fun showLoadingError()
+        fun showCreateConversation()
 
     }
 
     interface Presenter : BasePresenter {
 
         fun loadConversations(forceUpdate: Boolean)
-        fun createConversation(with: List<Int>)
+        fun createConversation()
         fun deleteConversation(conversationId: Int)
 
     }

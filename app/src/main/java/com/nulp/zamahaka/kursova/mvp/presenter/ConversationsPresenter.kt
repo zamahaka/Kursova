@@ -14,17 +14,20 @@ class ConversationsPresenter(private val mView: ConversationListContract.View,
 
     private var mIsFirstLoad = true
 
+    init {
+        mView.setPresenter(this)
+    }
+
     override fun start() {
         loadConversations(false)
     }
 
     override fun loadConversations(forceUpdate: Boolean) {
-        loadConversations(forceUpdate or mIsFirstLoad, true)
-        mIsFirstLoad = false
+        loadConversations(forceUpdate, true)
     }
 
-    override fun createConversation(with: List<Int>) {
-
+    override fun createConversation() {
+        mView.showCreateConversation()
     }
 
     override fun deleteConversation(conversationId: Int) {
@@ -41,6 +44,10 @@ class ConversationsPresenter(private val mView: ConversationListContract.View,
                 performViewOperation {
                     if (showLoadingUi) setLoadingIndicator(false)
                     if (conversations.isEmpty()) setEmptyState(true) else showConversationList(conversations)
+                }
+                if (mIsFirstLoad) {
+                    loadConversations(true)
+                    mIsFirstLoad = false
                 }
             }
 
