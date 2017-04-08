@@ -2,22 +2,21 @@ package com.nulp.zamahaka.kursova.source
 
 import com.nulp.zamahaka.kursova.mvp.model.Conversation
 import java.util.*
-import kotlin.properties.Delegates
 
 /**
  * Created by Ura on 02.04.2017.
  */
 
 class ConversationsRepository
-private constructor(private val mConversationsRemoteSource: ConversationsDataSource,
-                    private val mConversationsLocalSource: ConversationsDataSource) : ConversationsDataSource {
+private constructor(private val mRemoteConversationsSource: ConversationsDataSource,
+                    private val mLocalConversationsSource: ConversationsDataSource) : ConversationsDataSource {
 
-    private val mCachedConversations: MutableMap<Int, Conversation> = LinkedHashMap()
+    private val mCache: MutableMap<Int, Conversation> = LinkedHashMap()
     private var mCacheIsDirty = false
 
-    override fun getConversations(callback: ConversationsDataSource.LoadConversationsCallback) {
-        if (mCachedConversations.isNotEmpty() && !mCacheIsDirty) {
-            callback.onConversationsLoaded(ArrayList(mCachedConversations.values))
+    override fun getConversations(callback: ConversationsDataSource.LoadCallback) {
+        if (mCache.isNotEmpty() && !mCacheIsDirty) {
+            callback.onConversationsLoaded(ArrayList(mCache.values))
             return
         }
 
@@ -26,10 +25,10 @@ private constructor(private val mConversationsRemoteSource: ConversationsDataSou
             getTasksFromRemoteDataSource(callback)
         } else {
             // Query the local storage if available. If not, query the network.
-            mConversationsLocalSource.getConversations(object : ConversationsDataSource.LoadConversationsCallback {
+            mLocalConversationsSource.getConversations(object : ConversationsDataSource.LoadCallback {
                 override fun onConversationsLoaded(conversations: List<Conversation>) {
                     refreshCache(conversations)
-                    callback.onConversationsLoaded(ArrayList(mCachedConversations.values))
+                    callback.onConversationsLoaded(ArrayList(mCache.values))
                 }
 
                 override fun onDataNotAvailable() {
@@ -39,37 +38,54 @@ private constructor(private val mConversationsRemoteSource: ConversationsDataSou
         }
     }
 
-    override fun saveConversation(conversation: Conversation) {
-        mConversationsRemoteSource.saveConversation(conversation)
-        mConversationsLocalSource.saveConversation(conversation)
+    override fun getConversation(conversationId: Int, callback: ConversationsDataSource.GetCallback) =
+            mCache[conversationId]?.let { callback.onConversationsLoaded(it) } ?: mLocalConversationsSource
+                    .getConversation(conversationId, object : ConversationsDataSource.GetCallback {
+                        override fun onConversationsLoaded(conversation: Conversation) {
+                            callback.onConversationsLoaded(conversation)
+                        }
 
-        mCachedConversations.put(conversation.mId, conversation)
+                        override fun onDataNotAvailable() {
+                            mRemoteConversationsSource.getConversation(conversationId, object : ConversationsDataSource.GetCallback {
+                                override fun onConversationsLoaded(conversation: Conversation) {
+                                    callback.onConversationsLoaded(conversation)
+                                }
+
+                                override fun onDataNotAvailable() {
+                                    callback.onDataNotAvailable()
+                                }
+                            })
+                        }
+                    })
+
+    override fun saveConversation(conversation: Conversation) {
+        performSourcesOperation { saveConversation(conversation) }
+
+        mCache.put(conversation.mId, conversation)
     }
 
     override fun refreshConversations() {
         mCacheIsDirty = true
     }
 
-    override fun deleteConversation(conversation: Conversation) {
-        mConversationsRemoteSource.deleteConversation(conversation)
-        mConversationsLocalSource.deleteConversation(conversation)
+    override fun deleteConversation(conversationId: Int) {
+        performSourcesOperation { deleteConversation(conversationId) }
 
-        mCachedConversations.remove(conversation.mId)
+        mCache.remove(conversationId)
     }
 
     override fun deleteAllConversations() {
-        mConversationsRemoteSource.deleteAllConversations()
-        mConversationsLocalSource.deleteAllConversations()
+        performSourcesOperation { deleteAllConversations() }
 
-        mCachedConversations.clear()
+        mCache.clear()
     }
 
-    private fun getTasksFromRemoteDataSource(callback: ConversationsDataSource.LoadConversationsCallback) {
-        mConversationsRemoteSource.getConversations(object : ConversationsDataSource.LoadConversationsCallback {
+    private fun getTasksFromRemoteDataSource(callback: ConversationsDataSource.LoadCallback) {
+        mRemoteConversationsSource.getConversations(object : ConversationsDataSource.LoadCallback {
             override fun onConversationsLoaded(conversations: List<Conversation>) {
                 refreshCache(conversations)
                 refreshLocalDataSource(conversations)
-                callback.onConversationsLoaded(ArrayList(mCachedConversations.values))
+                callback.onConversationsLoaded(ArrayList(mCache.values))
             }
 
             override fun onDataNotAvailable() {
@@ -79,32 +95,37 @@ private constructor(private val mConversationsRemoteSource: ConversationsDataSou
     }
 
     private fun refreshCache(conversations: List<Conversation>) {
-        mCachedConversations.clear()
+        mCache.clear()
         for (conversation in conversations) {
-            mCachedConversations.put(conversation.mId, conversation)
+            mCache.put(conversation.mId, conversation)
         }
         mCacheIsDirty = false
     }
 
     private fun refreshLocalDataSource(conversations: List<Conversation>) {
-        mConversationsLocalSource.deleteAllConversations()
+        mLocalConversationsSource.deleteAllConversations()
         for (conversation in conversations) {
-            mConversationsLocalSource.saveConversation(conversation)
+            mLocalConversationsSource.saveConversation(conversation)
         }
+    }
+
+    private fun performSourcesOperation(operation: ConversationsDataSource.() -> Unit) {
+        mRemoteConversationsSource.operation()
+        mLocalConversationsSource.operation()
     }
 
     companion object {
 
-        private var INSTANCE: ConversationsRepository? = null
+        private var sInstance: ConversationsRepository? = null
 
         fun getInstance(conversationsRemoteSource: ConversationsDataSource,
                         conversationsLocalSource: ConversationsDataSource): ConversationsRepository {
 
-            if (INSTANCE == null) {
-                INSTANCE = ConversationsRepository(conversationsRemoteSource, conversationsLocalSource)
+            if (sInstance == null) {
+                sInstance = ConversationsRepository(conversationsRemoteSource, conversationsLocalSource)
             }
 
-            return INSTANCE ?: throw ConcurrentModificationException("illegal access to conversations repository instance")
+            return sInstance as ConversationsRepository
         }
     }
 }

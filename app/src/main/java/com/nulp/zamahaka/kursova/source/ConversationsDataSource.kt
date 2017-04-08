@@ -7,20 +7,29 @@ import com.nulp.zamahaka.kursova.mvp.model.Conversation
  */
 interface ConversationsDataSource {
 
-    interface LoadConversationsCallback {
+    interface LoadCallback {
 
         fun onConversationsLoaded(conversations: List<Conversation>)
 
         fun onDataNotAvailable()
     }
 
-    fun getConversations(callback: LoadConversationsCallback)
+    interface GetCallback {
+
+        fun onConversationsLoaded(conversation: Conversation)
+
+        fun onDataNotAvailable()
+    }
+
+    fun getConversations(callback: LoadCallback)
+
+    fun getConversation(conversationId: Int, callback: GetCallback)
 
     fun saveConversation(conversation: Conversation)
 
     fun refreshConversations()
 
-    fun deleteConversation(conversation: Conversation)
+    fun deleteConversation(conversationId: Int)
 
     fun deleteAllConversations()
 

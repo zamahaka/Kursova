@@ -2,6 +2,7 @@ package com.nulp.zamahaka.kursova.activity
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import com.nulp.zamahaka.kursova.Injection
 import com.nulp.zamahaka.kursova.R
 import com.nulp.zamahaka.kursova.adapter.PagerAdapter
 import com.nulp.zamahaka.kursova.mvp.presenter.ConversationsPresenter
@@ -27,7 +28,8 @@ class MainActivity : AppCompatActivity() {
         tabLayout.setupWithViewPager(viewPager)
         val adapter = PagerAdapter(supportFragmentManager)
         val conversationsFragment = ConversationListFragment.newInstance()
-        conversationsFragment.setPresenter(ConversationsPresenter(conversationsFragment))
+        conversationsFragment.setPresenter(ConversationsPresenter(conversationsFragment,
+                Injection.provideTasksRepository(this)))
         adapter.addFragment(conversationsFragment)
 
         viewPager.adapter = adapter

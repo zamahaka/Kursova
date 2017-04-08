@@ -1,5 +1,8 @@
 package com.nulp.zamahaka.kursova
 
+import android.annotation.SuppressLint
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.support.annotation.DrawableRes
 import android.widget.ImageView
 import com.squareup.picasso.Picasso
@@ -28,3 +31,9 @@ fun ImageView.load(url: String, @DrawableRes id: Int) {
 fun ImageView.loadFromAssetNoFit(path: String) {
     Picasso.with(context).loadAsset(path).into(this)
 }
+
+@SuppressLint("Recycle")
+fun SQLiteDatabase.queryDef(table: String, columns: Array<String>? = null, selection: String? = null,
+                            selectionArgs: Array<String>? = null, groupBy: String? = null, having: String? = null,
+                            orderBy: String? = null, limit: String? = null): Cursor =
+        query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit)

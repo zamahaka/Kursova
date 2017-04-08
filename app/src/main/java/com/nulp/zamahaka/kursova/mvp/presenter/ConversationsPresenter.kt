@@ -2,46 +2,58 @@ package com.nulp.zamahaka.kursova.mvp.presenter
 
 import com.nulp.zamahaka.kursova.mvp.contract.ConversationListContract
 import com.nulp.zamahaka.kursova.mvp.model.Conversation
-import com.nulp.zamahaka.kursova.mvp.model.Message
-import com.nulp.zamahaka.kursova.mvp.model.User
+import com.nulp.zamahaka.kursova.source.ConversationsDataSource
+import com.nulp.zamahaka.kursova.source.ConversationsRepository
 
 /**
  * Created by Ura on 26.03.2017.
  */
-class ConversationsPresenter(private val mView: ConversationListContract.View)
+class ConversationsPresenter(private val mView: ConversationListContract.View,
+                             private val mRepository: ConversationsRepository)
     : ConversationListContract.Presenter {
 
-    private val mConversations: MutableList<Conversation> by lazy {
-        createConversations()
-    }
-
-    private fun createConversations(): MutableList<Conversation> {
-        return (0..10).mapTo(ArrayList()) { createConversation(it) }
-    }
-
-    private fun createConversation(it: Int): Conversation {
-        return Conversation(it, "title$it", "https://pp.userapi.com/c604624/v604624394/331db/04EJwTZSV24.jpg", it - 1, Message(it, it, "text$it", User(
-                it, "Name$it", "SurName$it", "https://pp.userapi.com/c639117/v639117449/10482/G0qPv9BL0Cc.jpg", System.currentTimeMillis(), listOf(it),
-                1, System.currentTimeMillis(), "Lviv", "NULP"
-        ), System.currentTimeMillis()))
-    }
+    private var mIsFirstLoad = true
 
     override fun start() {
-        loadConversationList()
+        loadConversations(false)
     }
 
-    override fun loadConversationList() {
-        mView.showConversationList(mConversations)
+    override fun loadConversations(forceUpdate: Boolean) {
+        loadConversations(forceUpdate or mIsFirstLoad, true)
+        mIsFirstLoad = false
     }
 
-    override fun addConversation(with: List<Int>) {
-        val conversation = createConversation(mConversations.size)
-        mConversations.add(conversation)
-        mView.addConversation(conversation)
+    override fun createConversation(with: List<Int>) {
+
     }
 
-    override fun deleteConversation(id: Int) {
-        mConversations.removeAt(mConversations.indexOfFirst { it.mId == id })
-        mView.removeConversation(id)
+    override fun deleteConversation(conversationId: Int) {
+        mRepository.deleteConversation(conversationId)
+        performViewOperation { removeConversation(conversationId) }
+    }
+
+    private fun loadConversations(forceUpdate: Boolean, showLoadingUi: Boolean) {
+        if (showLoadingUi) performViewOperation { setLoadingIndicator(true) }
+        if (forceUpdate) mRepository.refreshConversations()
+
+        mRepository.getConversations(object : ConversationsDataSource.LoadCallback {
+            override fun onConversationsLoaded(conversations: List<Conversation>) {
+                performViewOperation {
+                    if (showLoadingUi) setLoadingIndicator(false)
+                    if (conversations.isEmpty()) setEmptyState(true) else showConversationList(conversations)
+                }
+            }
+
+            override fun onDataNotAvailable() {
+                performViewOperation {
+                    if (showLoadingUi) setLoadingIndicator(false)
+                    showLoadingError()
+                }
+            }
+        })
+    }
+
+    private fun performViewOperation(operation: ConversationListContract.View.() -> Unit) {
+        if (mView.isActive) mView.operation()
     }
 }

@@ -3,4 +3,8 @@
     <string name="conversation_avatar">Conversation avatar</string>
     <string name="conversation_sender_avatar">Conversation sender avatar</string>
     <string name="create_conversation">Create conversation</string>
+    <string name="message_no_internet">No Internet connection</string>
+    <string name="ok">Ok</string>
+    <string name="message_no_conversations">No conversations are available</string>
+    <string name="error_message_conversations_loading">Error loading conversations</string>
 </resources>
