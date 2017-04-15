@@ -21,11 +21,11 @@ import kotlin.properties.Delegates
 class ConversationsFragment : TagFragment(), ConversationListContract.View, ConversationListener {
     override val TAG = "ConversationsFragment"
     override val isActive get() = isAdded
+    override val mItems get() = mAdapter.mItems
 
     private val mAdapter by lazy { ConversationListAdapter(this) }
-    private val mItems get() = mAdapter.mItems
 
-    private var mPresenter: ConversationListContract.Presenter by Delegates.notNull()
+    private var mPresenter: ConversationListContract.Presenter? = null
 
     private val mNoInternetController by lazy { NoInternetController(context) }
     private val mErrorController by lazy { ErrorController(context, R.string.error_message_conversations_loading) }
@@ -40,7 +40,7 @@ class ConversationsFragment : TagFragment(), ConversationListContract.View, Conv
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         initViews()
-        mPresenter.start()
+        mPresenter?.start()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -50,7 +50,7 @@ class ConversationsFragment : TagFragment(), ConversationListContract.View, Conv
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.conversation_menu_create -> {
-            mPresenter.createConversation()
+            mPresenter?.createConversation()
             true
         }
         else -> false
@@ -61,27 +61,20 @@ class ConversationsFragment : TagFragment(), ConversationListContract.View, Conv
     }
 
     override fun showConversationList(conversations: List<Conversation>) {
-        mAdapter.notifyItemRangeRemoved(0, mItems.size)
-        mItems.clear()
-
-        mItems.addAll(conversations)
-        mAdapter.notifyItemRangeInserted(0, mItems.size)
+        mAdapter.clear()
+        mAdapter.addAll(conversations)
     }
 
-    override fun addConversation(conversation: Conversation) {
-        mItems.add(conversation)
-        mAdapter.notifyItemInserted(mItems.size - 1)
-    }
+    override fun addItem(item: Conversation, position: Int) = mAdapter.addItem(item, position)
 
-    override fun removeConversation(conversationId: Int) {
-        mItems.firstOrNull { it.mId == conversationId }?.let {
-            mAdapter.notifyItemRemoved(mItems.indexOf(it))
-            mItems.remove(it)
-        }
-    }
+    override fun addAll(items: List<Conversation>, start: Int) = mAdapter.addAll(items, start)
 
-    override fun deleteConversation(id: Int) {
-        mPresenter.deleteConversation(id)
+    override fun removeItem(item: Conversation) = mAdapter.removeItem(item)
+
+    override fun clear() = mAdapter.clear()
+
+    override fun deleteConversation(conversation: Conversation) {
+        mPresenter?.deleteConversation(conversation)
     }
 
     override fun showCreateConversation() {
@@ -112,7 +105,7 @@ class ConversationsFragment : TagFragment(), ConversationListContract.View, Conv
         recyclerConversations.layoutManager = LinearLayoutManager(context)
         recyclerConversations.adapter = mAdapter
 
-        swipeRefreshLayout.setOnRefreshListener { mPresenter.loadConversations(true) }
+        swipeRefreshLayout.setOnRefreshListener { mPresenter?.loadConversations(true) }
     }
 
     companion object {

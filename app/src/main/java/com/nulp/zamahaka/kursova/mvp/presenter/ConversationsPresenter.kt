@@ -26,9 +26,9 @@ class ConversationsPresenter(private val mRepository: ConversationsRepository)
         performViewOperation { showCreateConversation() }
     }
 
-    override fun deleteConversation(conversationId: Int) {
-        mRepository.deleteConversation(conversationId)
-        performViewOperation { removeConversation(conversationId) }
+    override fun deleteConversation(conversation: Conversation) {
+        mRepository.deleteConversation(conversation.mId)
+        performViewOperation { removeItem(conversation) }
     }
 
     private fun loadConversations(forceUpdate: Boolean, showLoadingUi: Boolean) {

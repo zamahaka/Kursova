@@ -1,9 +1,6 @@
 package com.nulp.zamahaka.kursova.mvp.contract
 
-import com.nulp.zamahaka.kursova.mvp.ActiveView
-import com.nulp.zamahaka.kursova.mvp.BasePresenter
-import com.nulp.zamahaka.kursova.mvp.BaseView
-import com.nulp.zamahaka.kursova.mvp.RequesView
+import com.nulp.zamahaka.kursova.mvp.*
 import com.nulp.zamahaka.kursova.mvp.model.Conversation
 
 /**
@@ -11,11 +8,9 @@ import com.nulp.zamahaka.kursova.mvp.model.Conversation
  */
 interface ConversationListContract {
 
-    interface View : BaseView<Presenter>, ActiveView, RequesView {
+    interface View : BaseView<Presenter>, ActiveView, RequesView, AdapterView<Conversation> {
 
         fun showConversationList(conversations: List<Conversation>)
-        fun addConversation(conversation: Conversation)
-        fun removeConversation(conversationId: Int)
         fun setEmptyState(visible: Boolean)
         fun showLoadingError()
         fun showCreateConversation()
@@ -26,7 +21,7 @@ interface ConversationListContract {
 
         fun loadConversations(forceUpdate: Boolean)
         fun createConversation()
-        fun deleteConversation(conversationId: Int)
+        fun deleteConversation(conversation: Conversation)
 
     }
 
