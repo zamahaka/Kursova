@@ -20,12 +20,7 @@ import kotlin.properties.Delegates
  */
 class ConversationsFragment : TagFragment(), ConversationListContract.View, ConversationListener {
     override val TAG = "ConversationsFragment"
-    override val isActive: Boolean
-        get() {
-            Log.d("myLog", "isActive($this): $isAdded")
-            return isAdded
-        }
-
+    override val isActive get() = isAdded
 
     private val mAdapter by lazy { ConversationListAdapter(this) }
     private val mItems get() = mAdapter.mItems

@@ -1,5 +1,6 @@
 package com.nulp.zamahaka.kursova.mvp.presenter
 
+import com.nulp.zamahaka.kursova.isActiveOrFalse
 import com.nulp.zamahaka.kursova.mvp.contract.ConversationListContract
 import com.nulp.zamahaka.kursova.mvp.model.Conversation
 import com.nulp.zamahaka.kursova.source.ConversationsDataSource
@@ -8,26 +9,21 @@ import com.nulp.zamahaka.kursova.source.ConversationsRepository
 /**
  * Created by Ura on 26.03.2017.
  */
-class ConversationsPresenter(private val mView: ConversationListContract.View,
-                             private val mRepository: ConversationsRepository)
+class ConversationsPresenter(private val mRepository: ConversationsRepository)
     : ConversationListContract.Presenter {
+
+    var mView: ConversationListContract.View? = null
 
     private var mIsFirstLoad = true
 
-    init {
-        mView.setPresenter(this)
-    }
-
-    override fun start() {
-        loadConversations(false)
-    }
+    override fun start() = loadConversations(false)
 
     override fun loadConversations(forceUpdate: Boolean) {
-        loadConversations(forceUpdate, true)
+        loadConversations(forceUpdate or mIsFirstLoad, true)
     }
 
     override fun createConversation() {
-        mView.showCreateConversation()
+        performViewOperation { showCreateConversation() }
     }
 
     override fun deleteConversation(conversationId: Int) {
@@ -38,16 +34,13 @@ class ConversationsPresenter(private val mView: ConversationListContract.View,
     private fun loadConversations(forceUpdate: Boolean, showLoadingUi: Boolean) {
         if (showLoadingUi) performViewOperation { setLoadingIndicator(true) }
         if (forceUpdate) mRepository.refreshConversations()
+        mIsFirstLoad = false
 
         mRepository.getConversations(object : ConversationsDataSource.LoadCallback {
             override fun onConversationsLoaded(conversations: List<Conversation>) {
                 performViewOperation {
                     if (showLoadingUi) setLoadingIndicator(false)
                     if (conversations.isEmpty()) setEmptyState(true) else showConversationList(conversations)
-                }
-                if (mIsFirstLoad) {
-                    loadConversations(true)
-                    mIsFirstLoad = false
                 }
             }
 
@@ -61,6 +54,6 @@ class ConversationsPresenter(private val mView: ConversationListContract.View,
     }
 
     private fun performViewOperation(operation: ConversationListContract.View.() -> Unit) {
-        if (mView.isActive) mView.operation()
+        if (mView.isActiveOrFalse) mView?.operation()
     }
 }

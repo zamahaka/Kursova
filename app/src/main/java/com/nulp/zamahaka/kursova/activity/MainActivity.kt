@@ -1,6 +1,7 @@
 package com.nulp.zamahaka.kursova.activity
 
 import android.os.Bundle
+import android.support.design.widget.BottomNavigationView
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
@@ -19,7 +20,24 @@ import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
 
-    private var mConversationsPresenter: ConversationsPresenter by Delegates.notNull()
+    private val mConversationsPresenter by lazy { ConversationsPresenter(Injection.provideTasksRepository(this)) }
+
+    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+        when (item.itemId) {
+            R.id.navigation_main_conversation -> {
+                val conversationsFragment = ConversationsFragment.newInstance()
+                conversationsFragment.setPresenter(mConversationsPresenter)
+                mConversationsPresenter.mView = conversationsFragment
+                replaceFragment(conversationsFragment)
+                return@OnNavigationItemSelectedListener true
+            }
+            R.id.navigation_main_profile -> {
+                addProfileFragment()
+                return@OnNavigationItemSelectedListener true
+            }
+        }
+        return@OnNavigationItemSelectedListener false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,43 +48,19 @@ class MainActivity : AppCompatActivity() {
         val fragment: Fragment? = supportFragmentManager.findFragmentById(R.id.content)
         fragment?.let {
             when (fragment) {
-                is ConversationListContract.View ->
-                    mConversationsPresenter = createConversationsPresenter(fragment)
+                is ConversationListContract.View -> {
+                    fragment.setPresenter(mConversationsPresenter)
+                    mConversationsPresenter.mView = fragment
+                }
                 is EmptyFragment -> {
                 }
             }
-        } ?: when (navigationView.selectedItemId) {
-            R.id.navigation_main_conversation -> {
-                val conversationsFragment = ConversationsFragment.newInstance()
-                mConversationsPresenter = createConversationsPresenter(conversationsFragment)
-                replaceFragment(conversationsFragment)
-            }
-            R.id.navigation_main_profile -> {
-                val emptyFragment = EmptyFragment()
-                replaceFragment(emptyFragment)
-            }
-        }
+        } ?: run { navigationView.selectedItemId = R.id.navigation_main_conversation }
     }
 
     private fun initViews() {
-        navigationView.setOnNavigationItemSelectedListener { item -> onNavigationItemSelected(item) }
-        navigationView.setOnNavigationItemReselectedListener { }
+        navigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
     }
-
-    private fun onNavigationItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.navigation_main_conversation -> {
-            val conversationsFragment = ConversationsFragment.newInstance()
-            mConversationsPresenter = createConversationsPresenter(conversationsFragment)
-            replaceFragment(conversationsFragment)
-            true
-        }
-        R.id.navigation_main_profile -> {
-            addProfileFragment(); true
-        }
-        else -> false
-    }
-
-    private fun createConversationsPresenter(view: ConversationListContract.View) = ConversationsPresenter(view, Injection.provideTasksRepository(this))
 
     private fun addProfileFragment() {
         val fragment = EmptyFragment()

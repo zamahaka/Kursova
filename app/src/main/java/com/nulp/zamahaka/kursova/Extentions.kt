@@ -5,12 +5,15 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.support.annotation.DrawableRes
 import android.widget.ImageView
+import com.nulp.zamahaka.kursova.mvp.ActiveView
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.RequestCreator
 
 /**
  * Created by Ura on 26.03.2017.
  */
+
+val ActiveView?.isActiveOrFalse: Boolean get() = this?.isActive ?: false
 
 fun Picasso.loadAsset(path: String): RequestCreator {
     return this.load("file:///android_asset/$path")
